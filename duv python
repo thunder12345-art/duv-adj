@@ -1,0 +1,93 @@
+#duv计算
+#输入原始数据
+import numpy as np
+rgb1=np.array([
+    [0.6408,0.34,97.8],
+    [0.3021,0.6131,300.5],
+    [0.1558,0.0623,37.67]
+    ])
+gl0=np.array([[0.2842,0.2715,0.5304]])
+gl255=np.array([[0.3086,0.3159,450.9]])
+gl254=np.array([[0.3085,0.3158,447.4]])
+gl240=np.array([[0.3082,0.3149,395]])
+gl224=np.array([[0.3084,0.3148,339.6]])
+gl192=np.array([[0.3085,0.3144,242.8]])
+gl127=np.array([[0.309,0.3158,98.43]])
+gl63=np.array([[0.2952,0.2966,22.35]])
+gl31=np.array([[0.2892,0.2879,5.144]])
+gl23=np.array([[0.288,0.2864,2.8]])
+gl11=np.array([[0.2856,0.2819,1.03]])
+#输入目标数据
+rgb_target=np.array([
+    [0.6408,0.34,106.9],
+    [0.3021,0.6131,329],
+    [0.1558,0.0623,41.03]
+    ])
+gl0_target=np.array([[0.2822,0.269,0.5298]])
+gl255_target=np.array([[0.3077,0.3148,489.1]])
+gl254_target=np.array([[0.3078,0.3147,485.7]])
+gl240_target=np.array([[0.3081,0.3154,428.5]])
+gl224_target=np.array([[0.3082,0.3155,368.7]])
+gl192_target=np.array([[0.3082,0.3154,263.8]])
+gl127_target=np.array([[0.308,0.3154,107.2]])
+gl63_target=np.array([[0.308,0.316,23.32]])
+gl31_target=np.array([[0.3082,0.3154,4.964]])
+gl23_target=np.array([[0.3078,0.3158,2.79]])
+gl11_target=np.array([[0.307,0.3148,1.033]])
+
+#数据处理过程
+def inv(xyz):
+    det_xyz = np.linalg.det(xyz)
+    if det_xyz == 0:
+        print("矩阵不可逆，行列式为0")
+    else:
+        # 计算矩阵的逆
+        return np.linalg.inv(xyz)
+def rgb2xyz(rgb):
+    xrgb=np.random.rand(3, 3)
+    xrgb[:, 0]=rgb[:, 2]/rgb[:, 1]*rgb[:, 0]
+    xrgb[:, 1]=rgb[:, 2]
+    xrgb[:, 2]=rgb[:, 2]/rgb[:, 1]*(1-rgb[:, 1]-rgb[:, 0])
+    return xrgb
+def matrix2(glx,xrgb):
+    return np.dot(glx,xrgb)
+def gl2xyz(glx):
+    xgl=np.random.rand(1, 3)
+    #print(xgl)
+    xgl[:, 0]=glx[:, 2]/glx[:, 1]*glx[:, 0]
+    xgl[:, 1]=glx[:, 2]
+    xgl[:, 2]=glx[:, 2]/glx[:, 1]*(1-glx[:, 1]-glx[:, 0])
+    return  xgl
+xyz=rgb2xyz(rgb1)
+xyz_inv=inv(xyz)
+xyz_target=rgb2xyz(rgb_target)
+xyz_target_inv=inv(xyz_target)
+
+
+#计算RGB调节比例
+def rgb_adj(glx,glx_target):
+    x254=gl2xyz(glx)
+    k254=matrix2(x254,xyz_inv)
+    x254_target=gl2xyz(glx_target)
+    k254_target=matrix2(x254_target,xyz_target_inv)
+    k254_adj=(k254_target/k254-1)*100
+    return k254_adj
+
+k254_adj=rgb_adj(gl254,gl254_target)
+print("254灰阶R/G/B调节比例(%):",k254_adj)
+k240_adj=rgb_adj(gl240,gl240_target)
+print("240灰阶R/G/B调节比例(%):",k240_adj,)
+k224_adj=rgb_adj(gl224,gl224_target)
+print("224灰阶R/G/B调节比例(%):",k224_adj,)
+k192_adj=rgb_adj(gl192,gl192_target)
+print("192灰阶R/G/B调节比例(%):",k192_adj,)
+k127_adj=rgb_adj(gl127,gl127_target)
+print("127灰阶R/G/B调节比例(%):",k127_adj,)
+k63_adj=rgb_adj(gl63,gl63_target)
+print("63灰阶R/G/B调节比例(%):",k63_adj,)
+k31_adj=rgb_adj(gl31,gl31_target)
+print("31灰阶R/G/B调节比例(%):",k31_adj,)
+k23_adj=rgb_adj(gl23,gl23_target)
+print("23灰阶R/G/B调节比例(%):",k23_adj,)
+k11_adj=rgb_adj(gl11,gl11_target)
+print("11灰阶R/G/B调节比例(%):",k11_adj,)
