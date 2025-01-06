@@ -1,0 +1,82 @@
+#duv计算
+#输入原始数据
+import numpy as np
+rgb1=np.array([
+    [0.6408,0.34,97.8],
+    [0.3021,0.6131,300.5],
+    [0.1558,0.0623,37.67]
+    ])
+gl0=np.array  ([[0.2842,0.2715,0.53]])
+gl255=np.array  ([[0.3086,0.3159,450.90]])
+glx=np.array  ([
+    [0.3085,0.3158,447.4 ],
+    [0.3082,0.3149,395   ],
+    [0.3084,0.3148,339.6 ],
+    [0.3085,0.3144,242.8 ],
+    [0.309,0.3158,98.43  ],
+    [0.2952,0.2966,22.35 ],
+    [0.2892,0.2879,5.144 ],
+    [0.288,0.2864,2.8    ],
+    [0.2856,0.2819,1.03  ]
+    ])
+
+#输入目标数据
+rgb_target=np.array([
+    [0.6407,0.3407,106.9 ],
+    [0.3015,0.6139,329   ],
+    [0.1556,0.0616,41.03 ]
+    ])
+gl0_target=np.array([[0.2822,0.2691,0.5327]])
+gl255_target=np.array([[0.3076,0.3151,491.3]])
+def glx_gen():
+    gl_t=np.random.rand(9, 3)
+    i=0
+    gray=[254,240,224,192,127,63,31,23,11]
+    while i<9:
+        gl_t[i,:]=gl255_target
+        gl_t[i,2]=(gray[i]/255)**2.2*(gl255_target[0,2]-gl0_target[0,2])+gl0_target[0,2]
+        i+=1
+
+    return gl_t
+glx_target=glx_gen()
+
+#数据处理过程
+def inv(xyz):
+    det_xyz = np.linalg.det(xyz)
+    if det_xyz == 0:
+        print("矩阵不可逆，行列式为0")
+    else:
+        # 计算矩阵的逆
+        return np.linalg.inv(xyz)
+def rgb2xyz(rgb):
+    xrgb=np.random.rand(3, 3)
+    xrgb[:, 0]=rgb[:, 2]/rgb[:, 1]*rgb[:, 0]
+    xrgb[:, 1]=rgb[:, 2]
+    xrgb[:, 2]=rgb[:, 2]/rgb[:, 1]*(1-rgb[:, 1]-rgb[:, 0])
+    return xrgb
+def matrix2(glx,xrgb):
+    return np.dot(glx,xrgb)
+def gl2xyz(glx):
+    xgl=np.random.rand(9, 3) #update1
+    #print(xgl)
+    xgl[:, 0]=glx[:, 2]/glx[:, 1]*glx[:, 0]
+    xgl[:, 1]=glx[:, 2]
+    xgl[:, 2]=glx[:, 2]/glx[:, 1]*(1-glx[:, 1]-glx[:, 0])
+    return  xgl
+xyz=rgb2xyz(rgb1)
+xyz_inv=inv(xyz)
+xyz_target=rgb2xyz(rgb_target)
+xyz_target_inv=inv(xyz_target)
+
+
+#计算RGB调节比例
+def rgb_adj(glx,glx_target):
+    x=gl2xyz(glx)   
+    k=matrix2(x,xyz_inv)
+    x_target=gl2xyz(glx_target)
+    k_target=matrix2(x_target,xyz_target_inv)
+    k_adj=(k_target/k-1)*100
+    return k_adj
+
+k_adj=rgb_adj(glx,glx_target)
+print(k_adj)
